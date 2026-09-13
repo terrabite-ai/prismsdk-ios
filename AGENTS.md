@@ -83,6 +83,13 @@ The engine dispatches delegate and closure callbacks on the main queue.
 `@MainActor` entry points are those that present a system prompt or read
 CoreLocation authorisation state.
 
+## Decided
+
+**Prism is tracking-only.** It links `LocalSDKCore` and nothing else. The
+engine's `LocalSDKSync` product (offline buffering, MQTT publishing) is
+deliberately not linked and not exposed; locations go to the host app and
+nowhere else. Do not add it. Decided 2026-09-13.
+
 ## Open decisions
 
 Do not resolve these silently; ask.
@@ -92,8 +99,6 @@ Do not resolve these silently; ask.
   `@objc(PrismLocationDelegate)`. The comment in `PrismObjC.swift` argues for
   the unprefixed form and then claims the value types use `PRSM`, which they
   do not.
-- **Publishing.** Prism links only `LocalSDKCore`. Nothing reaches a backend
-  unless `LocalSDKSync` is linked and enabled, and Prism exposes neither.
 - **`PrismLocation` coding keys** are synthesized camelCase; the engine's
   `Location` and `asDictionary` use snake_case wire names.
 

@@ -1,0 +1,206 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.3.3 effective-5.10 (swiftlang-6.3.3.1.3 clang-2100.1.1.101)
+// swift-module-flags: -target arm64-apple-ios15.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -O -enable-experimental-feature DebugDescriptionMacro -module-name LocalSDKCore -package-name engine
+// swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.3.3
+import CoreLocation
+import Foundation
+import Network
+import Swift
+import UIKit
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+public enum TrackingMode : Swift.String, Swift.Codable, Swift.Sendable {
+  case precise
+  case standard
+  case efficient
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct Config {
+  public var trackingMode: LocalSDKCore.TrackingMode
+  public var allowMockLocation: Swift.Bool
+  public var horizontalAccuracyThreshold: Swift.Double
+  public var backgroundLocationEnabled: Swift.Bool
+  public init()
+  public init(trackingMode: LocalSDKCore.TrackingMode = .precise, allowMockLocation: Swift.Bool = false, horizontalAccuracyThreshold: Swift.Double = 200.0, backgroundLocationEnabled: Swift.Bool = true)
+  public func withTrackingMode(_ mode: LocalSDKCore.TrackingMode) -> LocalSDKCore.Config
+  public func withAllowMockLocation(_ allow: Swift.Bool) -> LocalSDKCore.Config
+  public func withHorizontalAccuracyThreshold(_ threshold: Swift.Double) -> LocalSDKCore.Config
+  public func withBackgroundLocationEnabled(_ enabled: Swift.Bool) -> LocalSDKCore.Config
+}
+public typealias LocationListener = (LocalSDKCore.Location) -> Swift.Void
+public typealias ErrorListener = (Swift.String) -> Swift.Void
+public protocol LocationDelegate : AnyObject {
+  func locationDidUpdate(_ location: LocalSDKCore.Location)
+  func locationDidFail(_ error: Swift.String)
+}
+public enum PermissionStatus : Swift.Equatable {
+  case notDetermined
+  case denied
+  case restricted
+  case authorizedWhenInUse(precise: Swift.Bool)
+  case authorizedAlways(precise: Swift.Bool)
+  public var isGranted: Swift.Bool {
+    get
+  }
+  public var isBackgroundGranted: Swift.Bool {
+    get
+  }
+  public var isPrecise: Swift.Bool {
+    get
+  }
+  public static func == (a: LocalSDKCore.PermissionStatus, b: LocalSDKCore.PermissionStatus) -> Swift.Bool
+}
+public enum LocalSDK {
+  public static func initialize(apiKey: Swift.String)
+  public static func setConfig(_ config: LocalSDKCore.Config)
+  public static func startTracking()
+  public static func stopTracking()
+  public static func isTracking() -> Swift.Bool
+  public static func checkLocationPermission() -> Swift.Bool
+  public static func checkBackgroundLocationPermission() -> Swift.Bool
+  @_Concurrency.MainActor public static func requestLocationPermission(completion: ((Swift.Bool) -> Swift.Void)? = nil)
+  @_Concurrency.MainActor public static func requestBackgroundLocationPermission(completion: ((Swift.Bool) -> Swift.Void)? = nil)
+  @_Concurrency.MainActor public static func requestLocationPermission() async -> LocalSDKCore.PermissionStatus
+  @_Concurrency.MainActor public static func requestBackgroundLocationPermission() async -> LocalSDKCore.PermissionStatus
+  @_Concurrency.MainActor public static func locationPermissionStatus() -> LocalSDKCore.PermissionStatus
+  public static func onLocation(_ listener: @escaping LocalSDKCore.LocationListener)
+  public static func onError(_ listener: @escaping LocalSDKCore.ErrorListener)
+  public static func setLocationDelegate(_ delegate: (any LocalSDKCore.LocationDelegate)?)
+  public static func locations() -> _Concurrency.AsyncStream<LocalSDKCore.Location>
+  public static func errors() -> _Concurrency.AsyncStream<Swift.String>
+  public static func getDeviceId() -> Swift.String
+  public static func setUserId(_ userId: Swift.String)
+  public static func setMetadata(_ metadata: [Swift.String : Swift.String])
+  public static func isBackgroundRefreshEnabled() -> Swift.Bool
+  public static func reset()
+}
+public enum LocationType : Swift.String, Swift.Codable, Swift.Sendable {
+  case visit
+  case stationary
+  case moving
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct Location : Swift.Codable, Swift.Equatable, Swift.Identifiable, Swift.Sendable {
+  public let id: Swift.String
+  public let timestamp: Swift.Int64
+  public let isMock: Swift.Bool
+  public let speed: Swift.Double
+  public let horizontalAccuracy: Swift.Double
+  public let altitude: Swift.Double
+  public let bearing: Swift.Double
+  public let latitude: Swift.Double
+  public let longitude: Swift.Double
+  public let type: LocalSDKCore.LocationType
+  public let batteryLevel: Swift.Int
+  public let deviceId: Swift.String
+  public let userId: Swift.String
+  public let timezoneOffset: Swift.String
+  public let verticalAccuracy: Swift.Double
+  public let networkStatus: Swift.Bool
+  public let trackingMode: LocalSDKCore.TrackingMode
+  public let batteryStatus: Swift.String
+  public let locationPermission: Swift.Bool
+  public let brand: Swift.String
+  public let model: Swift.String
+  public let os: Swift.String
+  public let osVersion: Swift.String
+  public let sdkVersion: Swift.String
+  public let appVersionName: Swift.String
+  public let appVersionCode: Swift.String
+  public let metadata: [Swift.String : Swift.String]?
+  public let arrivalDate: Swift.Int64?
+  public let departureDate: Swift.Int64?
+  public init(id: Swift.String? = nil, timestamp: Swift.Int64, isMock: Swift.Bool = false, speed: Swift.Double = 0, horizontalAccuracy: Swift.Double = 0, altitude: Swift.Double = 0, bearing: Swift.Double = 0, latitude: Swift.Double, longitude: Swift.Double, type: LocalSDKCore.LocationType = .moving, batteryLevel: Swift.Int, deviceId: Swift.String, userId: Swift.String = "", timezoneOffset: Swift.String, verticalAccuracy: Swift.Double = 0, networkStatus: Swift.Bool = false, trackingMode: LocalSDKCore.TrackingMode = .standard, batteryStatus: Swift.String = "UNKNOWN", locationPermission: Swift.Bool = false, brand: Swift.String = "Apple", model: Swift.String = "", os: Swift.String = "iOS", osVersion: Swift.String = "", sdkVersion: Swift.String = "", appVersionName: Swift.String = "", appVersionCode: Swift.String = "", metadata: [Swift.String : Swift.String]? = nil, arrivalDate: Swift.Int64? = nil, departureDate: Swift.Int64? = nil)
+  public static func == (a: LocalSDKCore.Location, b: LocalSDKCore.Location) -> Swift.Bool
+  public typealias ID = Swift.String
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+@objc(LSDKLocationDelegate) public protocol LSDKLocationDelegate {
+  @objc func locationDidUpdate(_ location: LocalSDKCore.LSDKLocation)
+  @objc func locationDidFail(_ error: Swift.String)
+}
+@_inheritsConvenienceInitializers @objc(LSDKConfig) final public class LSDKConfig : ObjectiveC.NSObject {
+  @objc final public var trackingMode: Swift.String
+  @objc final public var allowMockLocation: Swift.Bool
+  @objc final public var horizontalAccuracyThreshold: Swift.Double
+  @objc final public var backgroundLocationEnabled: Swift.Bool
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc(LSDKLocalSDK) final public class LSDKLocalSDK : ObjectiveC.NSObject {
+  @objc public static func initialize(apiKey: Swift.String)
+  @objc public static func setConfig(_ config: LocalSDKCore.LSDKConfig)
+  @objc public static func startTracking()
+  @objc public static func stopTracking()
+  @objc public static var isTracking: Swift.Bool {
+    @objc get
+  }
+  @objc public static func checkLocationPermission() -> Swift.Bool
+  @objc public static func checkBackgroundLocationPermission() -> Swift.Bool
+  @_Concurrency.MainActor @objc public static var locationPermissionStatus: Swift.String {
+    @objc get
+  }
+  @_Concurrency.MainActor @objc public static var hasPreciseLocation: Swift.Bool {
+    @objc get
+  }
+  @_Concurrency.MainActor @objc public static func requestLocationPermission(completion: ((Swift.Bool) -> Swift.Void)?)
+  @_Concurrency.MainActor @objc public static func requestBackgroundLocationPermission(completion: ((Swift.Bool) -> Swift.Void)?)
+  @objc public static func deviceIdentifier() -> Swift.String
+  @objc public static func setUserIdentifier(_ userId: Swift.String)
+  @objc public static func setMetadata(_ metadata: [Swift.String : Swift.String])
+  @objc public static func isBackgroundRefreshEnabled() -> Swift.Bool
+  @objc public static func reset()
+  @objc public static func setLocationDelegate(_ delegate: (any LocalSDKCore.LSDKLocationDelegate)?)
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(LSDKLocation) final public class LSDKLocation : ObjectiveC.NSObject {
+  @objc final public let identifier: Swift.String
+  @objc final public let timestamp: Swift.Int64
+  @objc final public let isMock: Swift.Bool
+  @objc final public let speed: Swift.Double
+  @objc final public let horizontalAccuracy: Swift.Double
+  @objc final public let verticalAccuracy: Swift.Double
+  @objc final public let altitude: Swift.Double
+  @objc final public let bearing: Swift.Double
+  @objc final public let latitude: Swift.Double
+  @objc final public let longitude: Swift.Double
+  @objc final public let type: Swift.String
+  @objc final public let batteryLevel: Swift.Int
+  @objc final public let batteryStatus: Swift.String
+  @objc final public let deviceIdentifier: Swift.String
+  @objc final public let userIdentifier: Swift.String
+  @objc final public let timezoneOffset: Swift.String
+  @objc final public let networkStatus: Swift.Bool
+  @objc final public let trackingMode: Swift.String
+  @objc final public let locationPermission: Swift.Bool
+  @objc final public let brand: Swift.String
+  @objc final public let model: Swift.String
+  @objc final public let os: Swift.String
+  @objc final public let osVersion: Swift.String
+  @objc final public let sdkVersion: Swift.String
+  @objc final public let appVersionName: Swift.String
+  @objc final public let appVersionCode: Swift.String
+  @objc final public let metadata: [Swift.String : Swift.String]?
+  @objc final public let arrivalDate: Foundation.NSNumber?
+  @objc final public let departureDate: Foundation.NSNumber?
+  @objc final public var asDictionary: [Swift.String : Any] {
+    @objc get
+  }
+  @objc deinit
+}
+extension LocalSDKCore.TrackingMode : Swift.Equatable {}
+extension LocalSDKCore.TrackingMode : Swift.Hashable {}
+extension LocalSDKCore.TrackingMode : Swift.RawRepresentable {}
+extension LocalSDKCore.LocationType : Swift.Equatable {}
+extension LocalSDKCore.LocationType : Swift.Hashable {}
+extension LocalSDKCore.LocationType : Swift.RawRepresentable {}

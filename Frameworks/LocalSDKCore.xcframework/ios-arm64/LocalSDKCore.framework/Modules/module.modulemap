@@ -1,0 +1,5 @@
+framework module LocalSDKCore {
+    umbrella header "LocalSDKCore-Swift.h"
+    export *
+    module * { export * }
+}

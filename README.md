@@ -17,7 +17,7 @@ https://github.com/terrabite-ai/prismsdk-ios
 Or in `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/terrabite-ai/prismsdk-ios", branch: "main")
+.package(url: "https://github.com/terrabite-ai/prismsdk-ios", from: "0.1.0")
 ```
 
 Add the `PrismSDK` product to your target.

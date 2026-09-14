@@ -93,6 +93,8 @@ public final class PrismObjC: NSObject {
 
     @objc public static func reset() {
         Prism.reset()
+        // `Prism.reset()` drops its own adapter; this one is ours to drop.
+        adapter.set(nil)
     }
 
     // MARK: - Permissions
@@ -166,10 +168,13 @@ public final class PrismObjC: NSObject {
     /// Swift delegate is weak and the adapter would otherwise be deallocated the
     /// moment this returned. Your object is still held weakly by that adapter, so
     /// setting a delegate does not create a retain cycle.
+    /// `@MainActor`, as the Swift API is. Objective-C does not enforce that, so
+    /// a bridged host must call this from the main thread.
+    @MainActor
     @objc public static func setLocationDelegate(_ delegate: PrismLocationDelegateObjC?) {
         guard let delegate else {
             adapter.set(nil)
-            Prism.setLocationDelegate(nil)
+            Prism.clearLocationDelegate()
             return
         }
         let bridge = ObjCDelegateAdapter(delegate)

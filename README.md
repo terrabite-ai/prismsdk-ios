@@ -49,6 +49,9 @@ foreground and tracking stops with it.
 ```swift
 import PrismSDK
 
+// @MainActor because requesting permission presents a system prompt, and the
+// compiler enforces that it happens on the main actor.
+@MainActor
 final class Tracking: PrismLocationDelegate {
 
     func start() {
@@ -69,7 +72,8 @@ final class Tracking: PrismLocationDelegate {
 }
 ```
 
-Prism holds the delegate weakly, so keep your own reference to it.
+Prism holds the delegate weakly, so keep your own reference to it. Delegate
+callbacks arrive on the main thread.
 
 If you prefer `async`:
 

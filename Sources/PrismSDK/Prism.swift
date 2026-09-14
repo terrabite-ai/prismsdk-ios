@@ -66,7 +66,14 @@ public enum Prism {
     /// `initialize(apiKey:)` again before anything else afterwards.
     public static func reset() {
         LocalSDK.reset()
-        setLocationDelegate(nil)
+        clearLocationDelegate()
+    }
+
+    /// Nonisolated so `reset()` can run from anywhere: clearing touches only the
+    /// retention box and the engine, never a delegate.
+    static func clearLocationDelegate() {
+        adapter.set(nil)
+        LocalSDK.setLocationDelegate(nil)
     }
 
     // MARK: - Permissions
@@ -119,11 +126,13 @@ public enum Prism {
 
     /// Set the receiver for locations and errors. Pass `nil` to clear.
     ///
-    /// Held weakly — keep your own strong reference.
+    /// Held weakly — keep your own strong reference. `@MainActor`, as the
+    /// delegate protocol is: callbacks arrive on the main actor, so the
+    /// receiver is registered there too.
+    @MainActor
     public static func setLocationDelegate(_ delegate: PrismLocationDelegate?) {
         guard let delegate else {
-            adapter.set(nil)
-            LocalSDK.setLocationDelegate(nil)
+            clearLocationDelegate()
             return
         }
         // Retained here because the engine holds its delegate weakly; without this

@@ -78,10 +78,14 @@ After a refresh, run `make test` and check the swiftinterface still has every
 
 ## Concurrency
 
-The engine dispatches delegate and closure callbacks on the main queue.
-`AsyncStream` consumers receive values on whatever executor they run on. The
-`@MainActor` entry points are those that present a system prompt or read
-CoreLocation authorisation state.
+The engine dispatches delegate and closure callbacks on the main queue, and
+`PrismLocationDelegate` is declared `@MainActor` to say so — that is what lets
+a Swift 6 view model conform without an isolation error. `setLocationDelegate`
+is `@MainActor` for the same reason. The delegate adapters are `@MainActor`
+classes whose engine-facing methods are `nonisolated` and hop back with
+`MainActor.assumeIsolated`. `AsyncStream` consumers receive values on whatever
+executor they run on. The other `@MainActor` entry points are those that
+present a system prompt or read CoreLocation authorisation state.
 
 ## Decided
 

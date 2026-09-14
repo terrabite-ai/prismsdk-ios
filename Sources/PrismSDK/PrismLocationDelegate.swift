@@ -5,10 +5,15 @@ import LocalSDKCore
 ///
 /// Held **weakly** — keep your own strong reference, or callbacks stop silently
 /// when your object is deallocated.
+///
+/// `@MainActor`: the engine delivers every callback on the main queue, and
+/// declaring that here is what lets a view model or controller conform without
+/// the compiler flagging the conformance as crossing an isolation boundary —
+/// a warning in Swift 5 and an error in the Swift 6 language mode.
+@MainActor
 public protocol PrismLocationDelegate: AnyObject {
 
-    /// A location was produced. Called on an arbitrary thread; hop to the main
-    /// actor before touching UI.
+    /// A location was produced. Called on the main actor.
     func locationDidUpdate(_ location: PrismLocation)
 
     /// Something went wrong. The SDK keeps tracking unless the message says
@@ -24,6 +29,12 @@ public protocol PrismLocationDelegate: AnyObject {
 ///   would be deallocated the moment `setDelegate` returned.
 /// - *This* holds the **caller's** delegate weakly, matching the contract above,
 ///   so setting a delegate never keeps the caller's object alive.
+///
+/// `@MainActor` because its target is. The engine's protocol is nonisolated, so
+/// the two forwarding methods are `nonisolated` to satisfy it and hop back with
+/// `assumeIsolated`, which is honest: the engine dispatches both on the main
+/// queue and traps here if that ever stops being true.
+@MainActor
 final class PrismDelegateAdapter: LocationDelegate {
 
     private weak var target: PrismLocationDelegate?
@@ -32,12 +43,12 @@ final class PrismDelegateAdapter: LocationDelegate {
         self.target = target
     }
 
-    func locationDidUpdate(_ location: Location) {
-        target?.locationDidUpdate(PrismLocation(location))
+    nonisolated func locationDidUpdate(_ location: Location) {
+        MainActor.assumeIsolated { target?.locationDidUpdate(PrismLocation(location)) }
     }
 
-    func locationDidFail(_ error: String) {
-        target?.locationDidFail(error)
+    nonisolated func locationDidFail(_ error: String) {
+        MainActor.assumeIsolated { target?.locationDidFail(error) }
     }
 }
 

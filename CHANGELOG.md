@@ -15,8 +15,8 @@ First release.
 - Background location tracking with visit detection. `PrismLocation` carries
   the fix, the device and app state when it was taken, and, for visits, the
   arrival and departure times.
-- Three tracking modes, `precise`, `standard` and `efficient`, and a
-  configurable horizontal-accuracy threshold, set through `PrismConfig`.
+- `PrismConfig` for tuning tracking, including a configurable
+  horizontal-accuracy threshold.
 - Delivery by `PrismLocationDelegate`, by closure (`onLocation`, `onError`),
   or by `AsyncStream` (`locations()`, `errors()`).
 - Permission handling: foreground and background requests with closure and

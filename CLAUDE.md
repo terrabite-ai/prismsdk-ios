@@ -43,6 +43,12 @@ raw values of `PrismTrackingMode` and `PrismLocationType`, and the keys of
 `asDictionary` are branched on by Objective-C and React Native hosts. Add to
 them; never rename.
 
+**Engine internals stay private.** The per-mode distance tables, speed bands,
+filter thresholds and region sizing rules live in the engine's private source.
+Do not copy them into the README, doc comments, CHANGELOG or release notes.
+Describe modes in relative terms only (more or fewer updates, more or less
+battery), as `PrismTrackingMode`'s doc comments do. Decided 2026-09-14.
+
 **Adding a field to `PrismLocation` means four edits**: `PrismLocation`,
 `PrismLocationObjC`, `asDictionary`, and the 29-field count in
 `PrismLocationMappingTests`. The count test fails first if the engine grows.

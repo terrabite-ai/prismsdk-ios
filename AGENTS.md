@@ -1,5 +1,8 @@
 # prismsdk-ios
 
+This file orients AI coding agents working on this repo. `CLAUDE.md` is a
+symlink to this file — edit `AGENTS.md` only.
+
 ## Project Overview
 
 Prism SDK for iOS: a Swift wrapper over the LocalSDKCore tracking engine. The

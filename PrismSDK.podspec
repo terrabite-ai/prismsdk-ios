@@ -8,10 +8,9 @@
 #
 # The framework is vendored from the checkout, which is what lets a `:git`
 # source work: CocoaPods requires every `vendored_frameworks` path to exist in
-# the checkout. Once the repository is public, an `:http` source pointing at a
-# release zip keeps the binary out of git history. That waits for visibility to
-# change, because a release asset behind auth is a plain download CocoaPods
-# cannot authenticate.
+# the checkout. An `:http` source pointing at a release zip would keep the
+# binary out of git history, but would also name the engine on the release
+# page, which is meant to show only Prism. See Package.swift.
 #
 # Not published to CocoaPods trunk. Trunk stops accepting new pods and versions
 # on 2 December 2026, and discovery by name is worth little for an SDK whose

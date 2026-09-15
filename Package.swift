@@ -10,10 +10,10 @@ import PackageDescription
 // the rest — none of which mention the engine's types.
 //
 // The XCFramework is committed under `Frameworks/` and referenced by `path`
-// rather than by `url` + `checksum`. A release-asset URL is the better shape
-// once the repository is public, because it keeps binaries out of git history;
-// while the repository is private that download sits behind auth, which SwiftPM
-// cannot supply. Rebuild the framework with the engine's
+// rather than by `url` + `checksum`. A release-asset URL would keep the binary
+// out of git history, but it would also put an engine-named zip on every
+// release page, and the release page is meant to show only Prism. 2.7 MB per
+// engine bump is the price of that. Rebuild the framework with the engine's
 // `Scripts/build-xcframework.sh` and copy the result here.
 //
 // The package is named after the repository and the product after the module,

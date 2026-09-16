@@ -1,0 +1,127 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.3.3 effective-5.10 (swiftlang-6.3.3.1.3 clang-2100.1.1.101)
+// swift-module-flags: -target arm64-apple-ios15.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -O -enable-experimental-feature StrictConcurrency -enable-experimental-feature DebugDescriptionMacro -module-name PrismEnrich -package-name tmp_7zdxceqxmo
+// swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.3.3
+import Foundation
+import Swift
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+public enum Enrich {
+  public static func attach(storageDir: Foundation.URL)
+  public static var isEnabled: Swift.Bool {
+    get
+  }
+  public static func start(_ config: PrismEnrich.EnrichConfig)
+  public static func stop()
+  public static func ingest(_ fix: PrismEnrich.EnrichFix)
+  public static func catchUp()
+  public static func flush()
+  public static func places() -> PrismEnrich.EnrichPlaces
+  public static func observe(_ listener: @escaping @Sendable (PrismEnrich.EnrichPlaces) -> Swift.Void) -> PrismEnrich.EnrichObservation
+  public static func clear()
+  public static var version: Swift.String {
+    get
+  }
+}
+public enum EnrichRetention : Swift.String, Swift.Sendable, Swift.CaseIterable {
+  case oneMonth, threeMonths, sixMonths
+  public var days: Swift.Int {
+    get
+  }
+  public init?(rawValue: Swift.String)
+  public typealias AllCases = [PrismEnrich.EnrichRetention]
+  public typealias RawValue = Swift.String
+  nonisolated public static var allCases: [PrismEnrich.EnrichRetention] {
+    get
+  }
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct EnrichConfig : Swift.Equatable, Swift.Sendable {
+  public var retention: PrismEnrich.EnrichRetention
+  public init(retention: PrismEnrich.EnrichRetention = .threeMonths)
+  public static func == (a: PrismEnrich.EnrichConfig, b: PrismEnrich.EnrichConfig) -> Swift.Bool
+}
+public enum EnrichFixKind : Swift.String, Swift.Sendable {
+  case moving, stationary, visit
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct EnrichFix : Swift.Equatable, Swift.Sendable {
+  public var latitude: Swift.Double
+  public var longitude: Swift.Double
+  public var timestampMs: Swift.Int64
+  public var tzOffsetMinutes: Swift.Int
+  public var horizontalAccuracyMeters: Swift.Double
+  public var speedMps: Swift.Double
+  public var kind: PrismEnrich.EnrichFixKind
+  public var arrivalMs: Swift.Int64?
+  public var departureMs: Swift.Int64?
+  public init(latitude: Swift.Double, longitude: Swift.Double, timestampMs: Swift.Int64, tzOffsetMinutes: Swift.Int, horizontalAccuracyMeters: Swift.Double, speedMps: Swift.Double, kind: PrismEnrich.EnrichFixKind, arrivalMs: Swift.Int64? = nil, departureMs: Swift.Int64? = nil)
+  public static func == (a: PrismEnrich.EnrichFix, b: PrismEnrich.EnrichFix) -> Swift.Bool
+}
+public enum EnrichPlaceKind : Swift.String, Swift.Sendable {
+  case home, frequent
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public enum EnrichConfidence : Swift.String, Swift.Sendable {
+  case provisional, low, moderate, high, confirmed
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct EnrichPlace : Swift.Equatable, Swift.Sendable {
+  public let kind: PrismEnrich.EnrichPlaceKind
+  public let latitude: Swift.Double
+  public let longitude: Swift.Double
+  public let visitCount: Swift.Int
+  public let totalDwellMs: Swift.Int64
+  public let distinctNights: Swift.Int
+  public let firstSeenMs: Swift.Int64
+  public let lastSeenMs: Swift.Int64
+  public let confidence: PrismEnrich.EnrichConfidence?
+  public init(kind: PrismEnrich.EnrichPlaceKind, latitude: Swift.Double, longitude: Swift.Double, visitCount: Swift.Int, totalDwellMs: Swift.Int64, distinctNights: Swift.Int, firstSeenMs: Swift.Int64, lastSeenMs: Swift.Int64, confidence: PrismEnrich.EnrichConfidence?)
+  public static func == (a: PrismEnrich.EnrichPlace, b: PrismEnrich.EnrichPlace) -> Swift.Bool
+}
+public struct EnrichPlaces : Swift.Equatable, Swift.Sendable {
+  public let home: PrismEnrich.EnrichPlace?
+  public let frequent: [PrismEnrich.EnrichPlace]
+  public let computedAtMs: Swift.Int64
+  public let retention: PrismEnrich.EnrichRetention
+  public let stayCount: Swift.Int
+  public let clusterCount: Swift.Int
+  public let observedFromMs: Swift.Int64?
+  public init(home: PrismEnrich.EnrichPlace?, frequent: [PrismEnrich.EnrichPlace], computedAtMs: Swift.Int64, retention: PrismEnrich.EnrichRetention, stayCount: Swift.Int, clusterCount: Swift.Int, observedFromMs: Swift.Int64?)
+  public static func empty(retention: PrismEnrich.EnrichRetention, computedAtMs: Swift.Int64) -> PrismEnrich.EnrichPlaces
+  public static func == (a: PrismEnrich.EnrichPlaces, b: PrismEnrich.EnrichPlaces) -> Swift.Bool
+}
+@_hasMissingDesignatedInitializers final public class EnrichObservation : Swift.Sendable {
+  final public func cancel()
+  @objc deinit
+}
+public enum EnrichInfo {
+  public static let version: Swift.String
+}
+extension PrismEnrich.EnrichRetention : Swift.Equatable {}
+extension PrismEnrich.EnrichRetention : Swift.Hashable {}
+extension PrismEnrich.EnrichRetention : Swift.RawRepresentable {}
+extension PrismEnrich.EnrichFixKind : Swift.Equatable {}
+extension PrismEnrich.EnrichFixKind : Swift.Hashable {}
+extension PrismEnrich.EnrichFixKind : Swift.RawRepresentable {}
+extension PrismEnrich.EnrichPlaceKind : Swift.Equatable {}
+extension PrismEnrich.EnrichPlaceKind : Swift.Hashable {}
+extension PrismEnrich.EnrichPlaceKind : Swift.RawRepresentable {}
+extension PrismEnrich.EnrichConfidence : Swift.Equatable {}
+extension PrismEnrich.EnrichConfidence : Swift.Hashable {}
+extension PrismEnrich.EnrichConfidence : Swift.RawRepresentable {}

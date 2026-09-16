@@ -152,6 +152,48 @@ Prism.setMetadata(["plan": "gold"])
 
 Both are attached to every location that follows.
 
+## Places
+
+Prism can infer where the user lives and which places they return to, from
+the locations it already delivers. Everything runs on the device; Prism never
+sends places anywhere. It is off by default.
+
+```swift
+Prism.setConfig(
+    PrismConfig().withEnrich(PrismEnrichConfig(retention: .threeMonths))
+)
+
+let places = Prism.places()          // synchronous, never nil
+if let home = places.home {
+    print("home near", home.latitude, home.longitude, home.confidence as Any)
+}
+for place in places.frequent { print("frequent:", place.latitude, place.longitude, place.visitCount, "visits") }
+
+Task {
+    for await updated in Prism.placesUpdates() { /* redraw */ }
+}
+```
+
+Objective-C:
+
+```objc
+PrismConfig *config = [PrismConfig new];
+config.enrichEnabled = YES;
+config.enrichRetention = @"THREE_MONTHS";
+[Prism setConfig:config];
+[Prism setPlacesListener:^(PrismPlaces *places) { /* main thread */ }];
+```
+
+`home` is nil until at least one stay has been observed, and carries a
+confidence that grows with the number of distinct nights spent there:
+`provisional`, `low`, `moderate`, `high`, `confirmed`. Retention decides how much
+history the inference rests on: one, three or six months. `Prism.clearPlaces()`
+deletes everything Prism has stored for this.
+
+Inferring a home address is sensitive. Ask for consent and disclose it in your
+privacy policy and App Store privacy details; Prism only computes, your app
+decides what to do with the result.
+
 ## Development
 
 ```
@@ -159,8 +201,9 @@ make test    # mapping tests on a simulator
 make lint    # validate the podspec
 ```
 
-The tracking engine ships as `Frameworks/LocalSDKCore.xcframework`. Refresh it
-with `make xcframework ENGINE=/path/to/localsdk-ios-core`.
+The tracking engine ships as `Frameworks/LocalSDKCore.xcframework`; refresh it
+with `make xcframework ENGINE=/path/to/localsdk-ios-core`. Place inference ships as
+`Frameworks/PrismEnrich.xcframework`; refresh it with `make enrich ENRICH=/path/to/prism-enrich-ios`.
 
 ## License
 

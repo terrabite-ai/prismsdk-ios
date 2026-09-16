@@ -21,7 +21,7 @@
 #
 Pod::Spec.new do |spec|
   spec.name         = 'PrismSDK'
-  spec.version      = '0.1.0'
+  spec.version      = '0.2.0'
   spec.summary      = 'Battery-aware background location tracking for iOS.'
   spec.description  = <<~DESC
     Add Prism to your app and receive your users' locations, in the foreground
@@ -47,8 +47,11 @@ Pod::Spec.new do |spec|
   # The wrapper. Same files as the SwiftPM target.
   spec.source_files = 'Sources/PrismSDK/**/*.swift'
 
-  # The engine. Same framework as the SwiftPM binaryTarget.
-  spec.vendored_frameworks = 'Frameworks/LocalSDKCore.xcframework'
+  # The engine and Terrabite's place inference. Same frameworks as the SwiftPM binaryTargets.
+  spec.vendored_frameworks = ['Frameworks/LocalSDKCore.xcframework', 'Frameworks/PrismEnrich.xcframework']
+
+  # Privacy manifest, as a resource bundle so App Store review can read it.
+  spec.resource_bundles = { 'PrismSDK' => ['Sources/PrismSDK/PrivacyInfo.xcprivacy'] }
 
   # `PrismSDK`, not the pod's default of the same name by accident: the module
   # name is what an integrator types after `import`, so it is pinned.

@@ -17,8 +17,10 @@ XC_ARGS     := -workspace $(WORKSPACE) -scheme $(SCHEME) -destination "$(DESTINA
 
 # Path to a checkout of localsdk-ios-core. Required by `make xcframework`.
 ENGINE ?=
+# Path to a checkout of prism-enrich-ios. Required by `make enrich`.
+ENRICH ?=
 
-.PHONY: build test lint clean xcframework
+.PHONY: build test lint clean xcframework enrich verify-frameworks
 
 build:
 	xcodebuild $(XC_ARGS) build
@@ -48,3 +50,25 @@ xcframework:
 	  cp -R "$$tmp/out/LocalSDKCore.xcframework" Frameworks/; \
 	  rm -rf "$$tmp"; \
 	  echo "Frameworks/LocalSDKCore.xcframework refreshed from $$(git -C "$(ENGINE)" rev-parse --short HEAD)"
+
+# Rebuild Frameworks/PrismEnrich.xcframework from a clean export of the Enrich
+# repo's HEAD, verify its hardening, then copy it in. The version stamped into
+# the framework is the Enrich repo's latest tag.
+enrich:
+	@test -n "$(ENRICH)" || { echo "usage: make enrich ENRICH=/path/to/prism-enrich-ios"; exit 1; }
+	@set -e; \
+	  tmp=$$(mktemp -d); \
+	  ver=$$(git -C "$(ENRICH)" describe --tags --abbrev=0 2>/dev/null || echo 0.0.0); \
+	  git -C "$(ENRICH)" archive HEAD | tar -x -C "$$tmp"; \
+	  ( cd "$$tmp" && ENRICH_VERSION=$$ver bash Scripts/build-xcframework.sh PrismEnrich "$$tmp/out" >/dev/null && \
+	    bash Scripts/verify-xcframework.sh "$$tmp/out/PrismEnrich.xcframework" $$ver ); \
+	  rm -rf Frameworks/PrismEnrich.xcframework; \
+	  cp -R "$$tmp/out/PrismEnrich.xcframework" Frameworks/; \
+	  rm -rf "$$tmp"; \
+	  echo "Frameworks/PrismEnrich.xcframework refreshed from prism-enrich-ios $$ver ($$(git -C "$(ENRICH)" rev-parse --short HEAD))"
+
+# Re-check the committed Enrich framework's hardening (the engine's script is
+# the engine repo's concern).
+verify-frameworks:
+	@test -d Frameworks/PrismEnrich.xcframework || { echo "no Frameworks/PrismEnrich.xcframework"; exit 1; }
+	@bash "$(ENRICH)/Scripts/verify-xcframework.sh" Frameworks/PrismEnrich.xcframework

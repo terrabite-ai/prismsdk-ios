@@ -9,7 +9,7 @@ import PackageDescription
 // `import PrismSDK`, and works with `Prism`, `PrismLocation`, `PrismConfig` and
 // the rest — none of which mention the engine's types.
 //
-// The XCFramework is committed under `Frameworks/` and referenced by `path`
+// Both XCFrameworks are committed under `Frameworks/` and referenced by `path`
 // rather than by `url` + `checksum`. A release-asset URL would keep the binary
 // out of git history, but it would also put an engine-named zip on every
 // release page, and the release page is meant to show only Prism. 2.7 MB per
@@ -40,8 +40,9 @@ let package = Package(
     targets: [
         .target(
             name: "PrismSDK",
-            dependencies: ["LocalSDKCore"],
+            dependencies: ["LocalSDKCore", "PrismEnrich"],
             path: "Sources/PrismSDK",
+            resources: [.copy("PrivacyInfo.xcprivacy")],
             swiftSettings: [
                 // Surfaces every data-race diagnostic the Swift 6 language mode
                 // would turn into an error, while still building as Swift 5.
@@ -54,13 +55,19 @@ let package = Package(
             name: "LocalSDKCore",
             path: "Frameworks/LocalSDKCore.xcframework"
         ),
+        // Terrabite's own on-device place inference, built from the private
+        // prism-enrich-ios repo by `make enrich`. Same reasoning for `path`.
+        .binaryTarget(
+            name: "PrismEnrich",
+            path: "Frameworks/PrismEnrich.xcframework"
+        ),
         // Mapping round-trips. The wrapper is three hand-written copies of a
         // 29-field model, and a mistyped field in any of them is silent, so this
         // is the one place tests genuinely earn their keep. Depends on
         // `LocalSDKCore` directly because fixtures are engine values.
         .testTarget(
             name: "PrismSDKTests",
-            dependencies: ["PrismSDK", "LocalSDKCore"],
+            dependencies: ["PrismSDK", "LocalSDKCore", "PrismEnrich"],
             path: "Tests/PrismSDKTests"
         ),
     ]

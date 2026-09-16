@@ -15,7 +15,8 @@ wrapper is source; the engine is a binary XCFramework. Integrators
 ```
 Sources/PrismSDK/       # The wrapper. Every public type is Prism's own.
 Sources/PrismSDK/ObjC/  # Objective-C facade over the Swift API.
-Frameworks/             # LocalSDKCore.xcframework, the engine. Build output, not source.
+Frameworks/             # LocalSDKCore.xcframework (engine) and PrismEnrich.xcframework (Terrabite's
+                        # on-device place inference, source in the private prism-enrich-ios repo).
 Tests/PrismSDKTests/    # Mapping tests. Swift Testing (@Suite / @Test / #expect).
 Package.swift           # Package `prismsdk-ios`, product `PrismSDK`, binaryTarget by path.
 PrismSDK.podspec        # Same two modules for CocoaPods. Not published to trunk.
@@ -30,10 +31,10 @@ prismsdk-ios.xcworkspace
 inside `internal` mapping initialisers and `core` accessors. Check with:
 
 ```bash
-grep -rn "public" Sources/PrismSDK | grep -E "\b(Location|Config|TrackingMode|PermissionStatus|LocationDelegate|LocalSDK)\b"
+grep -rn "public" Sources/PrismSDK | grep -E "\b(Location|Config|TrackingMode|PermissionStatus|LocationDelegate|LocalSDK|Enrich|EnrichFix|EnrichPlace|EnrichPlaces|EnrichConfig|EnrichRetention|EnrichPlaceKind|EnrichConfidence)\b"
 ```
 
-**Every `switch` over an engine enum needs `@unknown default`.** The engine is
+**Every `switch` over an engine or Enrich enum needs `@unknown default`.** The engine is
 built with library evolution, so its enums are not frozen. Without it the
 build warns in Swift 5 and fails in Swift 6.
 
@@ -51,6 +52,24 @@ filter thresholds and region sizing rules live in the engine's private source.
 Do not copy them into the README, doc comments, CHANGELOG or release notes.
 Describe modes in relative terms only (more or fewer updates, more or less
 battery), as `PrismTrackingMode`'s doc comments do. Decided 2026-09-14.
+
+**Prism owns the engine's closure-listener slots.** `PrismFanout.installEngineListeners()`
+is the only caller of `LocalSDK.onLocation` / `onError`. Host closures live in
+`PrismFanout`'s boxes; Enrich is fed from the same fan-out. The delegate path is
+separate and unchanged.
+
+**Enrich is reached only through `PlaceEngine`.** `Enrich.*` is called from
+`LiveEnrich` and nowhere else; `PrismEnrichBridge` and the `PrismPlace` /
+`PrismEnrichConfig` mappers are the only files that import `PrismEnrich`
+types. Tests install `FakePlaceEngine` on `PrismEnrichBridge.engine`.
+
+**Enrich thresholds stay private.** Cluster distances, dwell minimums, night
+windows, confidence tiers and buffer limits live in `prism-enrich-ios`.
+Describe places only in terms of what they are, never how they are found.
+
+**Adding a field to `PrismPlace` means three edits**: `PrismPlace` (+ its
+`CodingKeys`), `PrismPlaceObjC` (+ `asDictionary`), and the nine-field count in
+`PrismPlaceMappingTests`.
 
 **Adding a field to `PrismLocation` means four edits**: `PrismLocation`,
 `PrismLocationObjC`, `asDictionary`, and the 29-field count in
@@ -77,10 +96,11 @@ the Makefile.
 ## Refreshing the engine
 
 ```bash
-make xcframework ENGINE=/path/to/localsdk-ios-core
+make xcframework ENGINE=/path/to/localsdk-ios-core   # engine
+make enrich ENRICH=/path/to/prism-enrich-ios         # place inference
 ```
 
-This exports the engine's HEAD to a temporary directory and runs the engine's
+`make xcframework` exports the engine's HEAD to a temporary directory and runs the engine's
 own `Scripts/build-xcframework.sh`, so what ships is what is committed there.
 After a refresh, run `make test` and check the swiftinterface still has every
 `LocalSDK` static the wrapper calls.
@@ -98,7 +118,7 @@ present a system prompt or read CoreLocation authorisation state.
 
 ## Decided
 
-**Prism is tracking-only.** It links `LocalSDKCore` and nothing else. The
+**Prism is tracking-only.** It links `LocalSDKCore` and `PrismEnrich`, both Terrabite-shipped binaries, and nothing else. PrismEnrich runs entirely on the device and has no network code. The
 engine's `LocalSDKSync` product (offline buffering, MQTT publishing) is
 deliberately not linked and not exposed; locations go to the host app and
 nowhere else. Do not add it. Decided 2026-09-13.
@@ -117,4 +137,4 @@ Do not resolve these silently; ask.
 
 ## Not yet in the repository
 
-`Example/PrismDemo`, `docs/`, `PrivacyInfo.xcprivacy`, CHANGELOG, CI.
+`Example/PrismDemo`, `docs/`, CI.

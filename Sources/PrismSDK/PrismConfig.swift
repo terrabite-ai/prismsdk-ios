@@ -56,18 +56,24 @@ public struct PrismConfig: Equatable, Sendable {
     /// *Location updates* background mode and an "Always" grant.
     public var backgroundLocationEnabled: Bool = true
 
+    /// Places: home and frequently visited places inferred on the device. `nil`
+    /// (the default) keeps it off. Not an engine setting; applied by `Prism.setConfig`.
+    public var enrich: PrismEnrichConfig? = nil
+
     public init() {}
 
     public init(
         trackingMode: PrismTrackingMode = .precise,
         allowMockLocation: Bool = false,
         horizontalAccuracyThreshold: Double = 200,
-        backgroundLocationEnabled: Bool = true
+        backgroundLocationEnabled: Bool = true,
+        enrich: PrismEnrichConfig? = nil
     ) {
         self.trackingMode = trackingMode
         self.allowMockLocation = allowMockLocation
         self.horizontalAccuracyThreshold = horizontalAccuracyThreshold
         self.backgroundLocationEnabled = backgroundLocationEnabled
+        self.enrich = enrich
     }
 
     // MARK: - Builders
@@ -93,6 +99,13 @@ public struct PrismConfig: Equatable, Sendable {
     public func withBackgroundLocationEnabled(_ enabled: Bool) -> PrismConfig {
         var copy = self
         copy.backgroundLocationEnabled = enabled
+        return copy
+    }
+
+    /// Turn places on (`PrismEnrichConfig()`) or off (`nil`).
+    public func withEnrich(_ config: PrismEnrichConfig?) -> PrismConfig {
+        var copy = self
+        copy.enrich = config
         return copy
     }
 

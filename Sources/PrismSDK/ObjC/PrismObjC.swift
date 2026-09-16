@@ -25,6 +25,11 @@ public final class PrismConfigObjC: NSObject {
     @objc public var horizontalAccuracyThreshold: Double = 200
     @objc public var backgroundLocationEnabled: Bool = true
 
+    /// Places off by default. When on, `enrichRetention` is `"ONE_MONTH"`,
+    /// `"THREE_MONTHS"` or `"SIX_MONTHS"`; an unrecognised value falls back to three.
+    @objc public var enrichEnabled: Bool = false
+    @objc public var enrichRetention: String = "THREE_MONTHS"
+
     @objc public override init() { super.init() }
 
     var config: PrismConfig {
@@ -32,7 +37,8 @@ public final class PrismConfigObjC: NSObject {
             trackingMode: PrismTrackingMode(rawValue: trackingMode) ?? .precise,
             allowMockLocation: allowMockLocation,
             horizontalAccuracyThreshold: horizontalAccuracyThreshold,
-            backgroundLocationEnabled: backgroundLocationEnabled
+            backgroundLocationEnabled: backgroundLocationEnabled,
+            enrich: enrichEnabled ? PrismEnrichConfig(retention: PrismPlaceRetention(rawValue: enrichRetention) ?? .threeMonths) : nil
         )
     }
 }
@@ -93,9 +99,45 @@ public final class PrismObjC: NSObject {
 
     @objc public static func reset() {
         Prism.reset()
-        // `Prism.reset()` drops its own adapter; this one is ours to drop.
+        // `Prism.reset()` drops its own adapter; these are ours to drop.
         adapter.set(nil)
+        placesObservation.current?.observation.cancel()
+        placesObservation.set(nil)
     }
+
+    // MARK: - Places
+
+    /// The current inference. Never nil; `home` is nil until a stay exists.
+    @objc public static func places() -> PrismPlacesObjC {
+        PrismPlacesObjC(Prism.places())
+    }
+
+    /// Delete every stored stay and inferred place.
+    @objc public static func clearPlaces() {
+        Prism.clearPlaces()
+    }
+
+    /// Receive the current result now and every change after, on the main thread.
+    /// Pass `nil` to stop.
+    @objc public static func setPlacesListener(_ listener: ((PrismPlacesObjC) -> Void)?) {
+        placesObservation.current?.observation.cancel()
+        placesObservation.set(nil)
+        guard let listener else { return }
+        // The block is not Sendable; box it once here, and build the Objective-C
+        // view on the main queue from the Sendable value.
+        let box = ClosureBox<PrismPlacesObjC>(listener)
+        let observation = PrismEnrichBridge.current.observe { places in
+            let value = PrismPlaces(places)
+            DispatchQueue.main.async { box.call(PrismPlacesObjC(value)) }
+        }
+        placesObservation.set(ObservationBox(observation))
+    }
+
+    final class ObservationBox: @unchecked Sendable {
+        let observation: PlaceObservation
+        init(_ o: PlaceObservation) { observation = o }
+    }
+    private static let placesObservation = Retained<ObservationBox>()
 
     // MARK: - Permissions
 

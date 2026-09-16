@@ -4,6 +4,33 @@ All notable changes to Prism SDK for iOS. This project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Below 1.0.0, a
 minor version may change the API.
 
+## [0.2.0] — unreleased
+
+### Added
+
+- Places: the user's home and frequently visited places, inferred on the
+  device from the location stream. Off by default; enable with
+  `PrismConfig().withEnrich(PrismEnrichConfig(retention: .threeMonths))`.
+  Read with `Prism.places()`, observe with `Prism.placesUpdates()`, delete
+  with `Prism.clearPlaces()`. Objective-C: `[Prism places]`,
+  `[Prism setPlacesListener:]`, `[Prism clearPlaces]`, and
+  `enrichEnabled` / `enrichRetention` on the configuration.
+- `PrismPlace`, `PrismPlaces`, `PrismPlaceKind`, `PrismConfidence`,
+  `PrismPlaceRetention`, `PrismEnrichConfig`, with snake_case JSON keys.
+- `PrivacyInfo.xcprivacy`: no tracking, no collection by the SDK itself,
+  UserDefaults declared for the engine.
+
+### Changed
+
+- `Prism.onLocation` and `Prism.onError` closures are now held by Prism rather
+  than handed to the engine. Same semantics (one closure, last call wins),
+  now truly additive with a delegate, and cleared by `reset()`.
+- `PrismLocation.departureDate` documentation states when it is actually set.
+
+### Notes
+
+- Vendors `PrismEnrich.xcframework` 0.1.0 alongside the engine.
+
 ## [0.1.0] — 2026-09-14
 
 First release.
@@ -36,3 +63,4 @@ First release.
   language mode.
 
 [0.1.0]: https://github.com/terrabite-ai/prismsdk-ios/releases/tag/0.1.0
+[0.2.0]: https://github.com/terrabite-ai/prismsdk-ios/releases/tag/0.2.0

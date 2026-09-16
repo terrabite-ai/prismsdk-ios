@@ -28,11 +28,16 @@ public enum Prism {
     /// delegate first if you do not want to miss them.
     public static func initialize(apiKey: String) {
         LocalSDK.initialize(apiKey: apiKey)
+        // The engine's reset() clears its listener slots; re-taking them here
+        // keeps Prism's fan-out alive across reset → initialize.
+        PrismFanout.installEngineListeners()
+        PrismEnrichBridge.attach()
     }
 
     /// Apply a configuration. Optional; the defaults are sensible.
     public static func setConfig(_ config: PrismConfig) {
         LocalSDK.setConfig(config.core)
+        PrismEnrichBridge.apply(config.enrich)
     }
 
     public static func startTracking() {
@@ -67,6 +72,8 @@ public enum Prism {
     public static func reset() {
         LocalSDK.reset()
         clearLocationDelegate()
+        PrismFanout.clearHostClosures()
+        PrismEnrichBridge.reset()
     }
 
     /// Nonisolated so `reset()` can run from anywhere: clearing touches only the
@@ -142,15 +149,18 @@ public enum Prism {
         LocalSDK.setLocationDelegate(bridge)
     }
 
-    /// Receive locations through a closure. Additive — it does not replace a
-    /// delegate.
+    /// Receive locations through a closure. One closure at a time; a second call
+    /// replaces the first. Additive with respect to a delegate: both receive
+    /// every location. Called on the main thread. Cleared by `reset()`.
     public static func onLocation(_ listener: @escaping (PrismLocation) -> Void) {
-        LocalSDK.onLocation { listener(PrismLocation($0)) }
+        PrismFanout.hostLocation.set(ClosureBox(listener))
+        PrismFanout.installEngineListeners()
     }
 
-    /// Receive errors through a closure.
+    /// Receive errors through a closure. Same rules as `onLocation(_:)`.
     public static func onError(_ listener: @escaping (String) -> Void) {
-        LocalSDK.onError(listener)
+        PrismFanout.hostError.set(ClosureBox(listener))
+        PrismFanout.installEngineListeners()
     }
 
     /// Locations as an async sequence.
@@ -177,6 +187,26 @@ public enum Prism {
     /// Errors as an async sequence.
     public static func errors() -> AsyncStream<String> {
         LocalSDK.errors()
+    }
+
+    // MARK: - Places
+
+    /// The user's home and frequently visited places, inferred on the device.
+    /// Empty until places are enabled through `PrismConfig.enrich` and enough
+    /// stays have been observed. Synchronous; never nil.
+    public static func places() -> PrismPlaces {
+        PrismEnrichBridge.places()
+    }
+
+    /// Places as an async sequence. A new consumer receives the current value at
+    /// once, then every change. Buffers only the newest value.
+    public static func placesUpdates() -> AsyncStream<PrismPlaces> {
+        PrismEnrichBridge.placesUpdates()
+    }
+
+    /// Delete every stored stay and inferred place. Places stay enabled if they were.
+    public static func clearPlaces() {
+        PrismEnrichBridge.clearPlaces()
     }
 
     // MARK: - Identity and context

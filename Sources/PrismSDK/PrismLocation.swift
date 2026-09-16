@@ -72,8 +72,10 @@ public struct PrismLocation: Codable, Equatable, Sendable {
     /// When the stay began, in epoch milliseconds. Non-nil only for `.visit`.
     public let arrivalDate: Int64?
 
-    /// When the stay ended, in epoch milliseconds. Non-nil only for `.visit`, and
-    /// `nil` while the stay is still in progress.
+    /// When the stay ended, in epoch milliseconds. Usually `nil`: a visit is
+    /// reported once, when the platform recognises the stay, and no second row
+    /// arrives when it ends. It is set only when the first report already
+    /// carried a departure. Treat the next `.moving` location as the end.
     public let departureDate: Int64?
 
     // MARK: - Identity you set

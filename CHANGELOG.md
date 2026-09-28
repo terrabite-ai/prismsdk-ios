@@ -29,7 +29,8 @@ minor version may change the API.
 
 ### Notes
 
-- Vendors `PrismEnrich.xcframework` 0.1.0 alongside the engine.
+- Vendors a pre-release build of `PrismEnrich.xcframework` alongside the
+  engine while 0.2.0 is tested.
 
 ## [0.1.0] — 2026-09-14
 
